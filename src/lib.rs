@@ -3,9 +3,9 @@ pub mod openapi3;
 #[cfg(test)]
 mod tests {
     use crate::openapi3::*;
-    use schemars::{JsonSchema};
-    use serde::Serialize;
     use openapiv3::OpenAPI;
+    use schemars::JsonSchema;
+    use serde::Serialize;
 
     #[test]
     fn it_works() {
@@ -13,7 +13,7 @@ mod tests {
 
         #[derive(Serialize, JsonSchema)]
         pub struct CollectionWrapper<T> {
-            collection: Vec<T>
+            collection: Vec<T>,
         }
 
         #[derive(Serialize, JsonSchema)]
@@ -27,55 +27,59 @@ mod tests {
         }
 
         // list events
+        let list_path = ApiPath {
+            prefix: Some("api".to_owned()),
+            ids: vec!(ApiId{document: "organizers".to_owned(), key: "{oid}".to_owned()}),
+            token: Some("events".to_owned()),
+        };
         oasb.list::<CollectionWrapper<TestEvent>>(
-            "/api/organizers/{oid}/events".to_owned(),
+            &list_path,
             "Events".to_owned(),
-            Some("{oid}".to_owned()),
         );
 
         // fetch event
+        let fetch_path = ApiPath {
+            prefix: Some("api".to_owned()),
+            ids: vec!(
+                ApiId{document: "organizers".to_owned(), key: "{oid}".to_owned()},
+                ApiId{document: "events".to_owned(), key: "{eid}".to_owned()}
+            ),
+            token: None,
+        };
         oasb.fetch::<TestEvent>(
-            "/api/organizers/{oid}/events/{eid}".to_owned(),
+            &fetch_path,
             "Events".to_owned(),
-            Some("{oid}".to_owned()),
-            "{eid}".to_owned(),
         );
 
         // create event
         oasb.create::<TestEvent, TestEvent>(
-            "/api/organizers/{oid}/events".to_owned(),
+            &list_path,
             "Events".to_owned(),
-            Some("{oid}".to_owned()),
         );
 
         // update event
         oasb.update::<TestEvent, TestEvent>(
-            "/api/organizers/{oid}/events/{eid}".to_owned(),
+            &fetch_path,
             "Events".to_owned(),
-            Some("{oid}".to_owned()),
-            "{eid}".to_owned(),
         );
-        
+
         // replace event
         oasb.replace::<TestEvent, TestEvent>(
-            "/api/organizers/{oid}/events/{eid}".to_owned(),
+            &fetch_path,
             "Events".to_owned(),
-            Some("{oid}".to_owned()),
-            "{eid}".to_owned(),
         );
 
         // delete event
         oasb.delete::<TestEvent>(
-            "/api/organizers/{oid}/events/{eid}".to_owned(),
+            &fetch_path,
             "Events".to_owned(),
-            Some("{oid}".to_owned()),
-            "{eid}".to_owned(),
         );
 
         let json_str = serde_json::to_string_pretty(&oasb.generator.into_openapi());
         let json_str = json_str.unwrap_or_default();
 
-        let _openapi_json: OpenAPI = serde_json::from_str(&json_str).expect("Could not deserialize input");
+        let _openapi_json: OpenAPI =
+            serde_json::from_str(&json_str).expect("Could not deserialize input");
 
         let _res = std::fs::write("openapi_test.json", json_str.clone());
 

@@ -10,6 +10,32 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use std::collections::{hash_map::Entry as HashEntry, HashMap};
 use std::iter::FromIterator;
+use heck::CamelCase;
+
+#[derive(Debug, Clone)]
+pub struct ApiId {
+    pub document: String,
+    pub key: String,
+}
+impl std::fmt::Display for ApiId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}/{}", self.document, self.key)
+    }
+}
+
+#[derive(Debug, Clone)]
+pub struct ApiPath {
+    pub prefix: Option<String>,
+    pub ids: Vec<ApiId>,
+    pub token: Option<String>,
+}
+impl std::fmt::Display for ApiPath {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let ids: Vec<String> = self.ids.iter().map(|id| id.to_string()).collect();
+        let ids: String = ids.join("/");
+        write!(f, "/{}/{}/{}", self.prefix.clone().unwrap_or_default(), ids, self.token.clone().unwrap_or_default())
+    }
+}
 
 pub struct Oas3Builder {
     pub generator: OpenApiGenerator,
@@ -28,9 +54,8 @@ impl Oas3Builder {
 
     pub fn list<O: JsonSchema + Serialize>(
         &mut self,
-        web_path: String,
+        web_path: &ApiPath,
         document_name: String,
-        parent_key_name: Option<String>,
     ) {
         let operation_id = format!("list{}", document_name);
         let method = http::Method::GET;
@@ -44,10 +69,10 @@ impl Oas3Builder {
         self.add_error_responses(&mut resps);
 
         let mut parameters: Vec<RefOr<Parameter>> = vec![];
-        self.add_parent_param(parent_key_name, &mut parameters);
+        self.add_path_params(web_path.clone(), &mut parameters);
 
         self.generator.add_operation(OperationInfo {
-            path: web_path,
+            path: web_path.to_string(),
             method,
             operation: Operation {
                 operation_id: Some(operation_id),
@@ -61,10 +86,8 @@ impl Oas3Builder {
 
     pub fn fetch<O: JsonSchema + Serialize>(
         &mut self,
-        web_path: String,
+        web_path: &ApiPath,
         document_name: String,
-        parent_key_name: Option<String>,
-        my_key_name: String,
     ) {
         let operation_id = format!("fetch{}", document_name);
         let method = http::Method::GET;
@@ -78,11 +101,10 @@ impl Oas3Builder {
         self.add_error_responses(&mut resps);
 
         let mut parameters: Vec<RefOr<Parameter>> = vec![];
-        self.add_parent_param(parent_key_name, &mut parameters);
-        self.add_my_key_param(my_key_name, &mut parameters);
+        self.add_path_params(web_path.clone(), &mut parameters);
 
         self.generator.add_operation(OperationInfo {
-            path: web_path,
+            path: web_path.to_string(),
             method,
             operation: Operation {
                 operation_id: Some(operation_id),
@@ -96,10 +118,8 @@ impl Oas3Builder {
 
     pub fn delete<O: JsonSchema + Serialize>(
         &mut self,
-        web_path: String,
+        web_path: &ApiPath,
         document_name: String,
-        parent_key_name: Option<String>,
-        my_key_name: String,
     ) {
         let operation_id = format!("delete{}", document_name);
         let method = http::Method::DELETE;
@@ -113,11 +133,10 @@ impl Oas3Builder {
         self.add_error_responses(&mut resps);
 
         let mut parameters: Vec<RefOr<Parameter>> = vec![];
-        self.add_parent_param(parent_key_name, &mut parameters);
-        self.add_my_key_param(my_key_name, &mut parameters);
+        self.add_path_params(web_path.clone(), &mut parameters);
 
         self.generator.add_operation(OperationInfo {
-            path: web_path,
+            path: web_path.to_string(),
             method,
             operation: Operation {
                 operation_id: Some(operation_id),
@@ -131,9 +150,8 @@ impl Oas3Builder {
 
     pub fn create<I: JsonSchema + Serialize, O: JsonSchema + Serialize>(
         &mut self,
-        web_path: String,
+        web_path: &ApiPath,
         document_name: String,
-        parent_key_name: Option<String>,
     ) {
         let operation_id = format!("create{}", document_name);
         let method = http::Method::POST;
@@ -149,10 +167,10 @@ impl Oas3Builder {
         let request_body = self.create_request_body::<I>();
 
         let mut parameters: Vec<RefOr<Parameter>> = vec![];
-        self.add_parent_param(parent_key_name, &mut parameters);
+        self.add_path_params(web_path.clone(), &mut parameters);
 
         self.generator.add_operation(OperationInfo {
-            path: web_path,
+            path: web_path.to_string(),
             method,
             operation: Operation {
                 operation_id: Some(operation_id),
@@ -166,10 +184,8 @@ impl Oas3Builder {
 
     pub fn update<I: JsonSchema + Serialize, O: JsonSchema + Serialize>(
         &mut self,
-        web_path: String,
+        web_path: &ApiPath,
         document_name: String,
-        parent_key_name: Option<String>,
-        my_key_name: String,
     ) {
         let operation_id = format!("update{}", document_name);
         let method = http::Method::PATCH;
@@ -185,11 +201,10 @@ impl Oas3Builder {
         let request_body = self.create_request_body::<I>();
 
         let mut parameters: Vec<RefOr<Parameter>> = vec![];
-        self.add_parent_param(parent_key_name, &mut parameters);
-        self.add_my_key_param(my_key_name, &mut parameters);
+        self.add_path_params(web_path.clone(), &mut parameters);
 
         self.generator.add_operation(OperationInfo {
-            path: web_path,
+            path: web_path.to_string(),
             method,
             operation: Operation {
                 operation_id: Some(operation_id),
@@ -203,10 +218,8 @@ impl Oas3Builder {
 
     pub fn replace<I: JsonSchema + Serialize, O: JsonSchema + Serialize>(
         &mut self,
-        web_path: String,
+        web_path: &ApiPath,
         document_name: String,
-        parent_key_name: Option<String>,
-        my_key_name: String,
     ) {
         let operation_id = format!("replace{}", document_name);
         let method = http::Method::PUT;
@@ -222,11 +235,10 @@ impl Oas3Builder {
         let request_body = self.create_request_body::<I>();
 
         let mut parameters: Vec<RefOr<Parameter>> = vec![];
-        self.add_parent_param(parent_key_name, &mut parameters);
-        self.add_my_key_param(my_key_name, &mut parameters);
+        self.add_path_params(web_path.clone(), &mut parameters);
 
         self.generator.add_operation(OperationInfo {
-            path: web_path,
+            path: web_path.to_string(),
             method,
             operation: Operation {
                 operation_id: Some(operation_id),
@@ -283,40 +295,12 @@ impl Oas3Builder {
         responses.responses.insert(status, resp.into());
     }
 
-    fn add_parent_param(
+    fn add_path_param(
         &mut self,
-        parent_key_name: Option<String>,
+        param_name: String,
         parameters: &mut Vec<RefOr<Parameter>>,
+        description: String,
     ) {
-        if let Some(parent_key_name) = parent_key_name {
-            let param_schema = ParameterValue::Schema {
-                style: None,
-                explode: None,
-                allow_reserved: false,
-                schema: Box::new(
-                    self.generator
-                        .schema_generator
-                        .subschema_for::<String>()
-                        .into(),
-                ),
-                example: Some(Value::String { 0: "42".to_owned() }),
-                examples: None,
-            };
-            let param = Parameter {
-                name: parent_key_name,
-                location: "path".to_owned(),
-                description: Some("This document logically belongs to a parent which is identified by this key in the url.".to_owned()),
-                required: true,
-                deprecated: false,
-                allow_empty_value: false,
-                value: param_schema,
-                extensions: std::collections::BTreeMap::new(),
-            };
-            parameters.push(param.into());
-        }
-    }
-
-    fn add_my_key_param(&mut self, my_key_name: String, parameters: &mut Vec<RefOr<Parameter>>) {
         let param_schema = ParameterValue::Schema {
             style: None,
             explode: None,
@@ -333,11 +317,9 @@ impl Oas3Builder {
             examples: None,
         };
         let param = Parameter {
-            name: my_key_name,
+            name: param_name,
             location: "path".to_owned(),
-            description: Some(
-                "This document is identified by it's key at the end of it's url.".to_owned(),
-            ),
+            description: Some(description),
             required: true,
             deprecated: false,
             allow_empty_value: false,
@@ -345,6 +327,29 @@ impl Oas3Builder {
             extensions: std::collections::BTreeMap::new(),
         };
         parameters.push(param.into());
+    }
+
+    fn add_path_params(
+        &mut self,
+        api_path: ApiPath,
+        parameters: &mut Vec<RefOr<Parameter>>,
+    ) {
+        if api_path.token.is_none() {
+            if let Some((last, elements)) = api_path.ids.split_last() {
+                for api_id in elements {
+                    let description = format!("{}({})", api_id.document.to_camel_case(), api_id.key);
+                    self.add_path_param(api_id.key.clone(), parameters, description);
+                }
+                // "This document is identified by it's key at the end of it's url.".to_owned(),
+                let description = format!("The {} document is identified by the {} key at the end of this url.", last.document.to_camel_case(), last.key);
+                self.add_path_param(last.key.clone(), parameters, description);
+            }
+        } else {
+            for api_id in api_path.ids {
+                let description = format!("{}({})", api_id.document.to_camel_case(), api_id.key);
+                self.add_path_param(api_id.key, parameters, description);
+            }
+        }
     }
 }
 
