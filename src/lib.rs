@@ -27,25 +27,25 @@ mod tests {
         }
 
         // list events
-        let list_path = ApiPath {
-            prefix: Some("api".to_owned()),
-            ids: vec!(ApiId{document: "organizers".to_owned(), key: "{oid}".to_owned()}),
-            token: Some("events".to_owned()),
-        };
+        let list_path = ApiPath::new(
+            Some("api".to_owned()),
+            vec!(ApiId::new("organizers","{oid}")),
+            Some("events".to_owned()),
+        );
         oasb.list::<CollectionWrapper<TestEvent>>(
             &list_path,
             "Events".to_owned(),
         );
 
         // fetch event
-        let fetch_path = ApiPath {
-            prefix: Some("api".to_owned()),
-            ids: vec!(
-                ApiId{document: "organizers".to_owned(), key: "{oid}".to_owned()},
-                ApiId{document: "events".to_owned(), key: "{eid}".to_owned()}
+        let fetch_path = ApiPath::new(
+            Some("api".to_owned()),
+            vec!(
+                ApiId::new("organizers","{oid}"),
+                ApiId::new("events","{eid}"),
             ),
-            token: None,
-        };
+            None,
+        );
         oasb.fetch::<TestEvent>(
             &fetch_path,
             "Events".to_owned(),

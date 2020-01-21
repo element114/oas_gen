@@ -11,15 +11,30 @@ use serde_json::Value;
 use std::collections::{hash_map::Entry as HashEntry, HashMap};
 use std::iter::FromIterator;
 use heck::CamelCase;
+use contracts::pre;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct ApiId {
     pub document: String,
     pub key: String,
+    // Use new or default please
+    nothing: (),
 }
 impl std::fmt::Display for ApiId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}/{}", self.document, self.key)
+    }
+}
+impl ApiId {
+    #[pre(!document.contains('/'))]
+    #[pre(key.starts_with('{'))]
+    #[pre(key.ends_with('}'))]
+    pub fn new(document: &str, key: &str) -> Self {
+        ApiId {
+            document: document.to_owned(),
+            key: key.to_owned(),
+            nothing: (),
+        }
     }
 }
 
@@ -28,6 +43,8 @@ pub struct ApiPath {
     pub prefix: Option<String>,
     pub ids: Vec<ApiId>,
     pub token: Option<String>,
+    // Use new or default please
+    nothing: (),
 }
 impl std::fmt::Display for ApiPath {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -36,9 +53,28 @@ impl std::fmt::Display for ApiPath {
         write!(f, "/{}/{}/{}", self.prefix.clone().unwrap_or_default(), ids, self.token.clone().unwrap_or_default())
     }
 }
+impl ApiPath {
+    #[pre(!prefix.clone().unwrap_or_default().contains('/'))]
+    #[pre(!prefix.clone().unwrap_or_default().contains('{'))]
+    #[pre(!prefix.clone().unwrap_or_default().contains('}'))]
+    #[pre(!token.clone().unwrap_or_default().contains('/'))]
+    #[pre(!token.clone().unwrap_or_default().contains('{'))]
+    #[pre(!token.clone().unwrap_or_default().contains('}'))]
+    pub fn new(prefix: Option<String>, ids: Vec<ApiId>, token: Option<String>) -> Self {
+        ApiPath {
+            prefix,
+            ids,
+            token,
+            nothing: (),
+        }
+    }
+}
 
 pub struct Oas3Builder {
     pub generator: OpenApiGenerator,
+    // Use new or default please
+    #[allow(dead_code)]
+    nothing: (),
 }
 impl Default for Oas3Builder {
     fn default() -> Self {
@@ -49,6 +85,7 @@ impl Oas3Builder {
     pub fn new() -> Self {
         Oas3Builder {
             generator: OpenApiGenerator::new(SchemaGenerator::new(SchemaSettings::openapi3())),
+            nothing: (),
         }
     }
 
@@ -295,12 +332,16 @@ impl Oas3Builder {
         responses.responses.insert(status, resp.into());
     }
 
+    #[pre(param_name.starts_with('{'))]
+    #[pre(param_name.ends_with('}'))]
+    #[pre(param_name.len() >2)]
     fn add_path_param(
         &mut self,
         param_name: String,
         parameters: &mut Vec<RefOr<Parameter>>,
         description: String,
     ) {
+        let param_name = param_name.trim_start_matches('{').trim_end_matches('}').to_owned();
         let param_schema = ParameterValue::Schema {
             style: None,
             explode: None,
