@@ -1,8 +1,9 @@
-pub mod openapi3;
+pub mod oasgen;
+mod okapi3;
 
 #[cfg(test)]
 mod tests {
-    use crate::openapi3::*;
+    use crate::oasgen::*;
     use openapiv3::OpenAPI;
     use schemars::JsonSchema;
     use serde::Serialize;
@@ -26,56 +27,71 @@ mod tests {
             pub title: String,
         }
 
+        let limit_param = QueryParamBuilder::new::<u64>("limit".to_owned(), Some(std::u64::MAX));
+        let categories_param = QueryParamBuilder::new::<Vec<String>>(
+            "categories".to_owned(),
+            Some(vec![
+                "Financial Education".to_owned(),
+                "Work safety training".to_owned(),
+            ]),
+        );
+        let categories_param = categories_param.explode(false);
+        let qpbs = vec![limit_param, categories_param];
         // list events
-        let list_path = ApiPath::new(
+        let list_path = ApiPath::with_queries(
             Some("api".to_owned()),
-            vec!(ApiId::new("organizers","{oid}")),
+            vec![ApiId::new("organizers", "{oid}")],
             Some("events".to_owned()),
+            qpbs,
         );
-        oasb.list::<CollectionWrapper<TestEvent>>(
-            &list_path,
-            "Events".to_owned(),
-        );
+        oasb.list::<CollectionWrapper<TestEvent>>(&list_path, "Events".to_owned(), None);
 
         // fetch event
         let fetch_path = ApiPath::new(
             Some("api".to_owned()),
-            vec!(
-                ApiId::new("organizers","{oid}"),
-                ApiId::new("events","{eid}"),
-            ),
+            vec![
+                ApiId::new("organizers", "{oid}"),
+                ApiId::new("events", "{eid}"),
+            ],
             None,
         );
-        oasb.fetch::<TestEvent>(
-            &fetch_path,
-            "Events".to_owned(),
-        );
+        oasb.fetch::<TestEvent>(&fetch_path, "Events".to_owned(), None);
 
         // create event
-        oasb.create::<TestEvent, TestEvent>(
-            &list_path,
-            "Events".to_owned(),
+        let create_path = ApiPath::new(
+            Some("api".to_owned()),
+            vec![ApiId::new("organizers", "{oid}")],
+            Some("events".to_owned()),
         );
+        oasb.create::<TestEventForm, TestEvent>(&create_path, "Events".to_owned(), None);
 
         // update event
-        oasb.update::<TestEvent, TestEvent>(
-            &fetch_path,
-            "Events".to_owned(),
-        );
+        oasb.update::<TestEventForm, TestEvent>(&fetch_path, "Events".to_owned(), None);
 
         // replace event
-        oasb.replace::<TestEvent, TestEvent>(
-            &fetch_path,
-            "Events".to_owned(),
-        );
+        oasb.replace::<TestEventForm, TestEvent>(&fetch_path, "Events".to_owned(), None);
 
         // delete event
-        oasb.delete::<TestEvent>(
-            &fetch_path,
+        oasb.delete::<TestEvent>(&fetch_path, "Events".to_owned(), None);
+
+        // any operation: find event by title
+        let title_param = QueryParamBuilder::new::<String>("title".to_owned(), Some("Hackaton 2020 01 23".to_owned()));
+        let qpbs = vec![title_param];
+        let find_path = ApiPath::with_queries(
+            Some("api".to_owned()),
+            vec![ApiId::new("organizers", "{oid}")],
+            Some("events/find".to_owned()),
+            qpbs,
+        );
+        oasb.any::<(), TestEvent>(
+            &find_path,
+            http::Method::GET,
             "Events".to_owned(),
+            "Find".to_owned(),
+            Some("Find and event by it's title".to_owned()),
         );
 
-        let json_str = serde_json::to_string_pretty(&oasb.generator.into_openapi());
+        let json_str = serde_json::to_string_pretty(&oasb.build());
         let json_str = json_str.unwrap_or_default();
 
         let _openapi_json: OpenAPI =
