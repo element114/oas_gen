@@ -2,7 +2,13 @@
 name = "oas_gen"
 version = "0.1.0"
 authors = ["Andras Mocsary <nobody@reedwolf.com>"]
+repository = "https://gitlab.com/reed-wolf/oas_gen"
+documentation = "https://gitlab.com/reed-wolf/oas_gen/-/wikis/home"
+license = "MIT OR Apache-2.0"
+
+
 edition = "2018"
+publish = false
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
