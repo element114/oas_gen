@@ -1,3 +1,5 @@
+#![forbid(unsafe_code)]
+
 pub mod oasgen;
 mod okapi3;
 
