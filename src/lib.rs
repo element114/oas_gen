@@ -1,11 +1,13 @@
 #![forbid(unsafe_code)]
 
-pub mod oasgen;
+mod oasgen;
 mod okapi3;
+
+pub use oasgen::*;
 
 #[cfg(test)]
 mod tests {
-    use crate::oasgen::*;
+    use crate::*;
     use openapiv3::OpenAPI;
     use schemars::JsonSchema;
     use serde::Serialize;
