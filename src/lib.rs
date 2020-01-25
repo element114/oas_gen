@@ -79,7 +79,10 @@ mod tests {
         oasb.delete::<TestEvent>(&fetch_path, "Events".to_owned(), None);
 
         // any operation: find event by title
-        let title_param = QueryParamBuilder::new::<String>("title".to_owned(), Some("Hackaton 2020 01 23".to_owned()));
+        let title_param = QueryParamBuilder::new::<String>(
+            "title".to_owned(),
+            Some("Hackaton 2020 01 23".to_owned()),
+        );
         let qpbs = vec![title_param];
         let find_path = ApiPath::with_queries(
             Some("api".to_owned()),

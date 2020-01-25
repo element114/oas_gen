@@ -41,7 +41,7 @@ pub struct ApiPath {
 }
 impl std::fmt::Display for ApiPath {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut tmp = vec!();
+        let mut tmp = vec![];
         let ids: Vec<String> = self.ids.iter().map(|id| id.to_string()).collect();
         if let Some(pfx) = &self.prefix {
             tmp.push(pfx.clone());
@@ -52,11 +52,7 @@ impl std::fmt::Display for ApiPath {
         }
         let pth: String = tmp.join("/");
 
-        write!(
-            f,
-            "/{}",
-            pth
-        )
+        write!(f, "/{}", pth)
     }
 }
 impl ApiPath {
@@ -398,9 +394,12 @@ impl Oas3Builder {
         let resp = self.create_response::<Result<String, String>>("Unauthorized".to_owned());
         responses.responses.insert(status, resp.into());
 
-        let status = "418".to_owned();
-        let resp = self.create_response::<Result<String, String>>("I'm a teapot".to_owned());
-        responses.responses.insert(status, resp.into());
+        #[cfg(feature = "teapot")]
+        {
+            let status = "418".to_owned();
+            let resp = self.create_response::<Result<String, String>>("I'm a teapot".to_owned());
+            responses.responses.insert(status, resp.into());
+        }
 
         let status = "500".to_owned();
         let resp =
@@ -671,8 +670,8 @@ impl QueryParamBuilder {
 
 #[cfg(test)]
 mod tests {
-    use super::ApiPath;
     use super::ApiId;
+    use super::ApiPath;
 
     #[test]
     fn test_api_path() {
@@ -684,7 +683,11 @@ mod tests {
         let test_str = test_path.to_string();
         assert_eq!("/api/testdoc", test_str.as_str());
 
-        let test_path = ApiPath::new(Some("api".to_owned()), vec![ApiId::new("parents", "{pid}")], Some("testdoc".to_owned()));
+        let test_path = ApiPath::new(
+            Some("api".to_owned()),
+            vec![ApiId::new("parents", "{pid}")],
+            Some("testdoc".to_owned()),
+        );
         let test_str = test_path.to_string();
         assert_eq!("/api/parents/{pid}/testdoc", test_str.as_str());
     }
