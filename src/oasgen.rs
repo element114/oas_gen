@@ -41,17 +41,21 @@ pub struct ApiPath {
 }
 impl std::fmt::Display for ApiPath {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut tmp = vec!();
         let ids: Vec<String> = self.ids.iter().map(|id| id.to_string()).collect();
-        let ids: String = ids.join("/");
-
-        // self.query_params.first();
+        if let Some(pfx) = &self.prefix {
+            tmp.push(pfx.clone());
+        }
+        tmp.extend(ids);
+        if let Some(tkn) = &self.token {
+            tmp.push(tkn.clone());
+        }
+        let pth: String = tmp.join("/");
 
         write!(
             f,
-            "/{}/{}/{}",
-            self.prefix.clone().unwrap_or_default(),
-            ids,
-            self.token.clone().unwrap_or_default()
+            "/{}",
+            pth
         )
     }
 }
@@ -662,5 +666,26 @@ impl QueryParamBuilder {
             me.param.value = ps;
         }
         me
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::ApiPath;
+    use super::ApiId;
+
+    #[test]
+    fn test_api_path() {
+        let test_path = ApiPath::new(Some("api".to_owned()), vec![], Some("testdoc".to_owned()));
+        let test_str = test_path.to_string();
+        assert_eq!("/api/testdoc", test_str.as_str());
+
+        let test_path = ApiPath::new(Some("api/testdoc".to_owned()), vec![], None);
+        let test_str = test_path.to_string();
+        assert_eq!("/api/testdoc", test_str.as_str());
+
+        let test_path = ApiPath::new(Some("api".to_owned()), vec![ApiId::new("parents", "{pid}")], Some("testdoc".to_owned()));
+        let test_str = test_path.to_string();
+        assert_eq!("/api/parents/{pid}/testdoc", test_str.as_str());
     }
 }
