@@ -108,8 +108,13 @@ impl Oas3Builder {
         }
     }
 
-    pub fn build(self) -> OpenApi {
-        self.generator.into_openapi()
+    pub fn build(self, version: String) -> OpenApi {
+        let mut openapi = self.generator.into_openapi();
+        openapi.info = Info {
+            version,
+            ..openapi.info
+        };
+        openapi
     }
 
     pub fn list<O: JsonSchema + Serialize>(

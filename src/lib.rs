@@ -98,7 +98,7 @@ mod tests {
             Some("Find and event by it's title".to_owned()),
         );
 
-        let json_str = serde_json::to_string_pretty(&oasb.build());
+        let json_str = serde_json::to_string_pretty(&oasb.build("1.0.0".to_owned()));
         let json_str = json_str.unwrap_or_default();
 
         let _openapi_json: OpenAPI =
