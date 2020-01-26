@@ -93,6 +93,7 @@ impl ApiPath {
     }
 }
 
+#[derive(Debug, Clone)]
 pub struct Oas3Builder {
     generator: OpenApiGenerator,
 }
