@@ -185,7 +185,7 @@ impl Oas3Builder {
         })
     }
 
-    pub fn delete<O: JsonSchema + Serialize>(
+    pub fn delete<I: JsonSchema + Serialize, O: JsonSchema + Serialize>(
         &mut self,
         web_path: &ApiPath,
         document_name: String,
@@ -202,6 +202,8 @@ impl Oas3Builder {
 
         self.add_error_responses(&mut resps);
 
+        let request_body = self.create_request_body::<I>();
+
         let mut parameters: Vec<RefOr<Parameter>> = vec![];
         self.add_path_params(web_path.clone(), &mut parameters);
 
@@ -212,7 +214,7 @@ impl Oas3Builder {
                 operation_id: Some(operation_id),
                 description: operation_description,
                 responses: resps,
-                request_body: None,
+                request_body: Some(request_body.into()),
                 parameters,
                 ..Default::default()
             },
