@@ -78,6 +78,9 @@ mod tests {
         // delete event
         oasb.delete::<TestEventForm, TestEvent>(&fetch_path, "Events".to_owned(), None);
 
+        // delete event
+        oasb.delete_by_key::<TestEvent>(&create_path, "Events".to_owned(), None);
+
         // any operation: find event by title
         let title_param = QueryParamBuilder::new::<String>(
             "title".to_owned(),

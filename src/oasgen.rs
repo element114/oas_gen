@@ -222,6 +222,40 @@ impl Oas3Builder {
         })
     }
 
+    pub fn delete_by_key<O: JsonSchema + Serialize>(
+        &mut self,
+        web_path: &ApiPath,
+        document_name: String,
+        operation_description: Option<String>,
+    ) {
+        let operation_id = format!("delete{}", document_name);
+        let method = http::Method::DELETE;
+
+        let mut resps = Responses::default();
+
+        let status = "202".to_owned();
+        let resp = self.create_response::<O>(document_name);
+        resps.responses.insert(status, resp.into());
+
+        self.add_error_responses(&mut resps);
+
+        let mut parameters: Vec<RefOr<Parameter>> = vec![];
+        self.add_path_params(web_path.clone(), &mut parameters);
+
+        self.generator.add_operation(OperationInfo {
+            path: web_path.to_string(),
+            method,
+            operation: Operation {
+                operation_id: Some(operation_id),
+                description: operation_description,
+                responses: resps,
+                request_body: None,
+                parameters,
+                ..Default::default()
+            },
+        })
+    }
+
     pub fn create<I: JsonSchema + Serialize, O: JsonSchema + Serialize>(
         &mut self,
         web_path: &ApiPath,
