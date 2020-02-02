@@ -5,6 +5,7 @@ authors = ["Andras Mocsary <nobody@reedwolf.com>"]
 repository = "https://gitlab.com/reed-wolf/oas_gen"
 documentation = "https://docs.rs/oas_gen/"
 license = "MIT OR Apache-2.0"
+description = "An ergonomic, opinionated, builder pattern based api to build simple Open Api v3 specs in json for REST apis."
 
 edition = "2018"
 publish = true
