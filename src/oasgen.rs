@@ -104,8 +104,11 @@ impl Default for Oas3Builder {
 }
 impl Oas3Builder {
     pub fn new() -> Self {
+        let mut sts = SchemaSettings::openapi3();
+        sts.option_add_null_type = false;
+        sts.option_nullable = false;
         Oas3Builder {
-            generator: OpenApiGenerator::new(SchemaGenerator::new(SchemaSettings::openapi3())),
+            generator: OpenApiGenerator::new(SchemaGenerator::new(sts)),
         }
     }
 
