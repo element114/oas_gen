@@ -118,6 +118,7 @@ impl Oas3Builder {
             version,
             ..openapi.info
         };
+        // openapi.security = Vec<SecurityRequirement>
         openapi
     }
 
@@ -127,7 +128,12 @@ impl Oas3Builder {
         document_name: String,
         operation_description: Option<String>,
     ) {
-        let operation_id = format!("list{}", document_name);
+        let operation_id = if !document_name.ends_with("s") {
+            format!("list{}s", document_name)
+        } else {
+            format!("list{}", document_name)
+        };
+
         let method = http::Method::GET;
 
         let mut resps = Responses::default();
