@@ -122,13 +122,13 @@ impl Oas3Builder {
         openapi
     }
 
-    pub fn list<O: JsonSchema + Serialize>(
+    pub fn list<O: JsonSchema + Serialize, E: JsonSchema + Serialize>(
         &mut self,
         web_path: &ApiPath,
         document_name: String,
         operation_description: Option<String>,
     ) {
-        let operation_id = if !document_name.ends_with("s") {
+        let operation_id = if !document_name.ends_with('s') {
             format!("list{}s", document_name)
         } else {
             format!("list{}", document_name)
@@ -142,7 +142,7 @@ impl Oas3Builder {
         let resp = self.create_response::<O>(document_name);
         resps.responses.insert(status, resp.into());
 
-        self.add_error_responses(&mut resps);
+        self.add_error_responses::<E>(&mut resps);
 
         let mut parameters: Vec<RefOr<Parameter>> = vec![];
         self.add_path_params(web_path.clone(), &mut parameters);
@@ -161,7 +161,7 @@ impl Oas3Builder {
         })
     }
 
-    pub fn fetch<O: JsonSchema + Serialize>(
+    pub fn fetch<O: JsonSchema + Serialize, E: JsonSchema + Serialize>(
         &mut self,
         web_path: &ApiPath,
         document_name: String,
@@ -176,7 +176,7 @@ impl Oas3Builder {
         let resp = self.create_response::<O>(document_name);
         resps.responses.insert(status, resp.into());
 
-        self.add_error_responses(&mut resps);
+        self.add_error_responses::<E>(&mut resps);
 
         let mut parameters: Vec<RefOr<Parameter>> = vec![];
         self.add_path_params(web_path.clone(), &mut parameters);
@@ -195,7 +195,11 @@ impl Oas3Builder {
         })
     }
 
-    pub fn delete<I: JsonSchema + Serialize, O: JsonSchema + Serialize>(
+    pub fn delete<
+        I: JsonSchema + Serialize,
+        O: JsonSchema + Serialize,
+        E: JsonSchema + Serialize,
+    >(
         &mut self,
         web_path: &ApiPath,
         document_name: String,
@@ -210,7 +214,7 @@ impl Oas3Builder {
         let resp = self.create_response::<O>(document_name);
         resps.responses.insert(status, resp.into());
 
-        self.add_error_responses(&mut resps);
+        self.add_error_responses::<E>(&mut resps);
 
         let request_body = self.create_request_body::<I>();
 
@@ -231,7 +235,7 @@ impl Oas3Builder {
         })
     }
 
-    pub fn delete_by_key<O: JsonSchema + Serialize>(
+    pub fn delete_by_key<O: JsonSchema + Serialize, E: JsonSchema + Serialize>(
         &mut self,
         web_path: &ApiPath,
         document_name: String,
@@ -246,7 +250,7 @@ impl Oas3Builder {
         let resp = self.create_response::<O>(document_name);
         resps.responses.insert(status, resp.into());
 
-        self.add_error_responses(&mut resps);
+        self.add_error_responses::<E>(&mut resps);
 
         let mut parameters: Vec<RefOr<Parameter>> = vec![];
         self.add_path_params(web_path.clone(), &mut parameters);
@@ -265,7 +269,11 @@ impl Oas3Builder {
         })
     }
 
-    pub fn create<I: JsonSchema + Serialize, O: JsonSchema + Serialize>(
+    pub fn create<
+        I: JsonSchema + Serialize,
+        O: JsonSchema + Serialize,
+        E: JsonSchema + Serialize,
+    >(
         &mut self,
         web_path: &ApiPath,
         document_name: String,
@@ -280,7 +288,7 @@ impl Oas3Builder {
         let resp = self.create_response::<O>(document_name);
         resps.responses.insert(status, resp.into());
 
-        self.add_error_responses(&mut resps);
+        self.add_error_responses::<E>(&mut resps);
 
         let request_body = self.create_request_body::<I>();
 
@@ -301,7 +309,11 @@ impl Oas3Builder {
         })
     }
 
-    pub fn update<I: JsonSchema + Serialize, O: JsonSchema + Serialize>(
+    pub fn update<
+        I: JsonSchema + Serialize,
+        O: JsonSchema + Serialize,
+        E: JsonSchema + Serialize,
+    >(
         &mut self,
         web_path: &ApiPath,
         document_name: String,
@@ -316,7 +328,7 @@ impl Oas3Builder {
         let resp = self.create_response::<O>(document_name);
         resps.responses.insert(status, resp.into());
 
-        self.add_error_responses(&mut resps);
+        self.add_error_responses::<E>(&mut resps);
 
         let request_body = self.create_request_body::<I>();
 
@@ -337,7 +349,11 @@ impl Oas3Builder {
         })
     }
 
-    pub fn replace<I: JsonSchema + Serialize, O: JsonSchema + Serialize>(
+    pub fn replace<
+        I: JsonSchema + Serialize,
+        O: JsonSchema + Serialize,
+        E: JsonSchema + Serialize,
+    >(
         &mut self,
         web_path: &ApiPath,
         document_name: String,
@@ -352,7 +368,7 @@ impl Oas3Builder {
         let resp = self.create_response::<O>(document_name);
         resps.responses.insert(status, resp.into());
 
-        self.add_error_responses(&mut resps);
+        self.add_error_responses::<E>(&mut resps);
 
         let request_body = self.create_request_body::<I>();
 
@@ -373,7 +389,7 @@ impl Oas3Builder {
         })
     }
 
-    pub fn any<I: JsonSchema + Serialize, O: JsonSchema + Serialize>(
+    pub fn any<I: JsonSchema + Serialize, O: JsonSchema + Serialize, E: JsonSchema + Serialize>(
         &mut self,
         web_path: &ApiPath,
         method: http::Method,
@@ -389,7 +405,7 @@ impl Oas3Builder {
         let resp = self.create_response::<O>(document_name);
         resps.responses.insert(status, resp.into());
 
-        self.add_error_responses(&mut resps);
+        self.add_error_responses::<E>(&mut resps);
 
         let request_body = self.create_request_body::<I>();
 
@@ -436,25 +452,24 @@ impl Oas3Builder {
         request_body
     }
 
-    fn add_error_responses(&mut self, responses: &mut Responses) {
+    fn add_error_responses<E: Serialize + JsonSchema>(&mut self, responses: &mut Responses) {
         let status = "400".to_owned();
-        let resp = self.create_response::<Result<String, String>>("Bad Request".to_owned());
+        let resp = self.create_response::<E>("Bad Request".to_owned());
         responses.responses.insert(status, resp.into());
 
         let status = "401".to_owned();
-        let resp = self.create_response::<Result<String, String>>("Unauthorized".to_owned());
+        let resp = self.create_response::<E>("Unauthorized".to_owned());
         responses.responses.insert(status, resp.into());
 
         #[cfg(feature = "teapot")]
         {
             let status = "418".to_owned();
-            let resp = self.create_response::<Result<String, String>>("I'm a teapot".to_owned());
+            let resp = self.create_response::<E>("I'm a teapot".to_owned());
             responses.responses.insert(status, resp.into());
         }
 
         let status = "500".to_owned();
-        let resp =
-            self.create_response::<Result<String, String>>("Internal Server Error".to_owned());
+        let resp = self.create_response::<E>("Internal Server Error".to_owned());
         responses.responses.insert(status, resp.into());
     }
 

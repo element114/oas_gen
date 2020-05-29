@@ -48,7 +48,7 @@ mod tests {
             Some("events".to_owned()),
             qpbs,
         );
-        oasb.list::<CollectionWrapper<TestEvent>>(&list_path, "Events".to_owned(), None);
+        oasb.list::<CollectionWrapper<TestEvent>, String>(&list_path, "Events".to_owned(), None);
 
         // fetch event
         let fetch_path = ApiPath::new(
@@ -59,7 +59,7 @@ mod tests {
             ],
             None,
         );
-        oasb.fetch::<TestEvent>(&fetch_path, "Events".to_owned(), None);
+        oasb.fetch::<TestEvent, String>(&fetch_path, "Events".to_owned(), None);
 
         // create event
         let create_path = ApiPath::new(
@@ -67,19 +67,19 @@ mod tests {
             vec![ApiId::new("organizers", "{oid}")],
             Some("events".to_owned()),
         );
-        oasb.create::<TestEventForm, TestEvent>(&create_path, "Events".to_owned(), None);
+        oasb.create::<TestEventForm, TestEvent, String>(&create_path, "Events".to_owned(), None);
 
         // update event
-        oasb.update::<TestEventForm, TestEvent>(&fetch_path, "Events".to_owned(), None);
+        oasb.update::<TestEventForm, TestEvent, String>(&fetch_path, "Events".to_owned(), None);
 
         // replace event
-        oasb.replace::<TestEventForm, TestEvent>(&fetch_path, "Events".to_owned(), None);
+        oasb.replace::<TestEventForm, TestEvent, String>(&fetch_path, "Events".to_owned(), None);
 
         // delete event
-        oasb.delete::<TestEventForm, TestEvent>(&fetch_path, "Events".to_owned(), None);
+        oasb.delete::<TestEventForm, TestEvent, String>(&fetch_path, "Events".to_owned(), None);
 
         // delete event
-        oasb.delete_by_key::<TestEvent>(&create_path, "Events".to_owned(), None);
+        oasb.delete_by_key::<TestEvent, String>(&create_path, "Events".to_owned(), None);
 
         // any operation: find event by title
         let title_param = QueryParamBuilder::new::<String>(
@@ -93,7 +93,7 @@ mod tests {
             Some("events/find".to_owned()),
             qpbs,
         );
-        oasb.any::<(), TestEvent>(
+        oasb.any::<(), TestEvent, String>(
             &find_path,
             http::Method::GET,
             "Events".to_owned(),
