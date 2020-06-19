@@ -1,5 +1,7 @@
 An ergonomic, opinionated, builder pattern based api to build simple Open Api v3 specs in json for REST apis.
 
+# Semver
+This crate is in pre semver state, breaking changes increment minor.
 
 # License
 This project is licensed under either of
@@ -8,3 +10,7 @@ This project is licensed under either of
    * MIT license (LICENSE-MIT or http://opensource.org/licenses/MIT)
 
 at your option.
+
+# Extensions
+## Tests
+Supports https://github.com/davidkpiano/openapi-test style "x-tests" extension

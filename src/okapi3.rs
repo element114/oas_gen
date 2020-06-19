@@ -24,7 +24,7 @@ impl OpenApiGenerator {
     pub fn new(generator: SchemaGenerator) -> Self {
         OpenApiGenerator {
             schema_generator: generator,
-            operations: Default::default(),
+            operations: std::collections::HashMap::default(),
         }
     }
     pub fn add_operation(&mut self, mut op: OperationInfo) {
@@ -50,8 +50,8 @@ impl OpenApiGenerator {
             paths: {
                 let mut paths = Map::new();
                 for ((path, method), op) in self.operations {
-                    let path_item = paths.entry(path).or_default();
-                    Self::set_operation(path_item, method, op);
+                    let path_item: &mut PathItem = paths.entry(path).or_default();
+                    Self::set_operation(path_item, &method, op);
                 }
                 paths
             },
@@ -62,15 +62,15 @@ impl OpenApiGenerator {
                         .into_iter()
                         .map(|(k, v)| (k, v.into())),
                 ),
-                ..Default::default()
+                ..Components::default()
             }),
-            ..Default::default()
+            ..OpenApi::default()
         }
     }
 
-    fn set_operation(path_item: &mut PathItem, method: http::Method, op: Operation) {
+    fn set_operation(path_item: &mut PathItem, method: &http::Method, op: Operation) {
         // use http::Method::*;
-        let option = match method {
+        let option = match *method {
             Method::GET => &mut path_item.get,
             Method::PUT => &mut path_item.put,
             Method::POST => &mut path_item.post,
@@ -80,7 +80,7 @@ impl OpenApiGenerator {
             Method::PATCH => &mut path_item.patch,
             Method::TRACE => &mut path_item.trace,
             // Connect not available in OpenAPI3. Maybe should set in extensions?
-            Method::CONNECT => return,
+            // &Method::CONNECT => return,
             _ => return,
         };
         assert!(option.is_none());

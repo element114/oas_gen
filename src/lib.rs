@@ -1,21 +1,41 @@
 #![forbid(unsafe_code)]
+#![warn(clippy::pedantic)]
+
+mod any;
+mod apipath;
+mod create;
+mod delete;
+mod fetch;
+mod list;
+mod queryparam;
+mod replace;
+mod update;
 
 mod oasgen;
 mod okapi3;
+pub mod xtests;
 
+pub use any::*;
+pub use create::*;
+pub use delete::*;
+pub use fetch::*;
+pub use list::*;
+pub use replace::*;
+pub use update::*;
+
+pub use apipath::*;
 pub use oasgen::*;
+pub use queryparam::*;
 
 #[cfg(test)]
 mod tests {
-    use crate::*;
+    use crate::{ApiId, ApiPath, Oas3Builder, QueryParamBuilder};
     use openapiv3::OpenAPI;
     use schemars::JsonSchema;
     use serde::Serialize;
 
     #[test]
     fn it_works() {
-        let mut oasb = Oas3Builder::default();
-
         #[derive(Serialize, JsonSchema)]
         pub struct CollectionWrapper<T> {
             collection: Vec<T>,
@@ -31,7 +51,9 @@ mod tests {
             pub title: String,
         }
 
-        let limit_param = QueryParamBuilder::new::<u64>("limit".to_owned(), Some(std::u64::MAX));
+        let mut oasb = Oas3Builder::default();
+
+        let limit_param = QueryParamBuilder::new::<u64>("limit".to_owned(), Some(u64::max_value()));
         let categories_param = QueryParamBuilder::new::<Vec<String>>(
             "categories".to_owned(),
             Some(vec![
@@ -97,7 +119,7 @@ mod tests {
             &find_path,
             http::Method::GET,
             "Events".to_owned(),
-            "Find".to_owned(),
+            "Find",
             Some("Find and event by it's title".to_owned()),
         );
 
@@ -107,7 +129,7 @@ mod tests {
         let _openapi_json: OpenAPI =
             serde_json::from_str(&json_str).expect("Could not deserialize input");
 
-        let _res = std::fs::write("openapi_test.json", json_str.clone());
+        let _res = std::fs::write("openapi_test.json", json_str);
 
         // assert_eq!("", json_str);
     }
