@@ -52,6 +52,8 @@ impl std::fmt::Display for ApiPath {
     }
 }
 impl ApiPath {
+    /// </api/testdoc> is represented as @prefix:`api` and @token:`testdoc`.
+    /// </api/user/8/testdoc> is represented as @prefix:`api` @ids: `[('user','{user_key}')]` and @token:`testdoc`.
     #[pre(!prefix.clone().unwrap_or_default().starts_with('/'))]
     #[pre(!prefix.clone().unwrap_or_default().contains('{'))]
     #[pre(!prefix.clone().unwrap_or_default().contains('}'))]
@@ -67,6 +69,7 @@ impl ApiPath {
         }
     }
 
+    /// Adds query parameters to the url, otherwise same as new.
     #[pre(!prefix.clone().unwrap_or_default().starts_with('/'))]
     #[pre(!prefix.clone().unwrap_or_default().contains('{'))]
     #[pre(!prefix.clone().unwrap_or_default().contains('}'))]
