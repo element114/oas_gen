@@ -419,7 +419,8 @@ pub struct Header {
 #[serde(rename_all = "camelCase")]
 pub struct SecurityScheme {
     #[serde(rename = "type")]
-    pub schema_type: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub schema_type: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     #[serde(flatten)]

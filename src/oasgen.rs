@@ -46,13 +46,14 @@ impl Oas3Builder {
     #[must_use]
     pub fn create_bearer_scheme() -> SecurityScheme {
         SecurityScheme {
-            schema_type: "http".to_owned(),
+            // schema_type: "http".to_owned(),
             data: SecuritySchemeData::Http {
                 scheme: "bearer".to_owned(),
                 bearer_format: Some("JWT".to_owned()),
             },
             description: None,
             extensions: Map::default(),
+            schema_type: None,
         }
     }
 
@@ -74,7 +75,7 @@ impl Oas3Builder {
         let mut openapi = self.build(version);
         let components = Components {
             security_schemes,
-            ..Components::default()
+            ..openapi.components.unwrap_or_default()
         };
         openapi.components = Some(components);
         openapi.security.push(security);
