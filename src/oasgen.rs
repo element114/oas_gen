@@ -47,14 +47,24 @@ impl Oas3Builder {
         description: String,
     ) -> Response {
         let content_type = "application/json; charset=utf-8".to_owned();
-        let schema = self.generator.schema_generator.subschema_for::<O>().into();
+        let schema: schemars::schema::SchemaObject =
+            self.generator.schema_generator.subschema_for::<O>().into();
+        // OAS3 requires that if InstanceType::Null then ommit content entirely
+        let ommit_content =
+            if let Some(schemars::schema::SingleOrVec::Single(some)) = &schema.instance_type {
+                schemars::schema::InstanceType::Null.eq(&*some)
+            } else {
+                false
+            };
         let media = MediaType {
             schema: Some(schema),
             ..MediaType::default()
         };
         let mut resp = Response::default();
         resp.description = description;
-        resp.content.insert(content_type, media);
+        if !ommit_content {
+            resp.content.insert(content_type, media);
+        }
         resp
     }
 
@@ -164,5 +174,23 @@ impl Oas3Builder {
         for query_param in api_path.query_params {
             parameters.push(query_param.into());
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::Oas3Builder;
+    use serde_json::json;
+
+    #[test]
+    fn test_create_response_empty() {
+        let mut oasb = Oas3Builder::default();
+        let resp = oasb.create_response::<()>("Empty response is invalid in oas 3.0.".to_owned());
+
+        let got = serde_json::to_value(resp).unwrap();
+        let expect = json!({
+            "description": "Empty response is invalid in oas 3.0."
+        });
+        assert_eq!(expect, got);
     }
 }
