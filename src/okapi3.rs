@@ -13,7 +13,7 @@ use std::iter::FromIterator;
 pub type Map<K, V> = schemars::Map<K, V>;
 
 type Object = Map<String, Value>;
-type SecurityRequirement = Map<String, Vec<String>>;
+pub type SecurityRequirement = Map<String, Vec<String>>;
 
 #[derive(Debug, Clone)]
 pub struct OpenApiGenerator {

@@ -1,14 +1,14 @@
 use contracts::pre;
 use heck::CamelCase;
 use schemars::gen::{SchemaGenerator, SchemaSettings};
-use schemars::JsonSchema;
+use schemars::{JsonSchema, Map};
 use serde::Serialize;
 use serde_json::Value;
 
 use crate::apipath::ApiPath;
 use crate::okapi3::{
-    Info, MediaType, OpenApi, OpenApiGenerator, Parameter, ParameterValue, RefOr, RequestBody,
-    Response, Responses,
+    Components, Info, MediaType, OpenApi, OpenApiGenerator, Parameter, ParameterValue, RefOr,
+    RequestBody, Response, Responses, SecurityScheme, SecuritySchemeData,
 };
 
 #[derive(Debug, Clone)]
@@ -39,6 +39,45 @@ impl Oas3Builder {
             ..openapi.info
         };
         // openapi.security = Vec<SecurityRequirement>
+        openapi
+    }
+
+    /// Create a http bearer Auth security scheme
+    #[must_use]
+    pub fn create_bearer_scheme() -> SecurityScheme {
+        SecurityScheme {
+            schema_type: "http".to_owned(),
+            data: SecuritySchemeData::Http {
+                scheme: "bearer".to_owned(),
+                bearer_format: Some("JWT".to_owned()),
+            },
+            description: None,
+            extensions: Map::default(),
+        }
+    }
+
+    ///
+    /// ```
+    /// let mut security_schemes: Map<String, RefOr<SecurityScheme>> = Map::default();
+    /// let security_scheme = create_bearer_scheme();
+    /// security_schemes.insert("bearerAuth".to_owned(), RefOr::Object(security_scheme));
+    /// ```
+    #[must_use]
+    pub fn build_with_security(
+        self,
+        version: String,
+        security_schemes: Map<String, RefOr<SecurityScheme>>,
+    ) -> OpenApi {
+        let mut security: Map<String, Vec<String>> = Map::default();
+        security.insert("bearerAuth".to_owned(), vec![]);
+
+        let mut openapi = self.build(version);
+        let components = Components {
+            security_schemes,
+            ..Components::default()
+        };
+        openapi.components = Some(components);
+        openapi.security.push(security);
         openapi
     }
 
