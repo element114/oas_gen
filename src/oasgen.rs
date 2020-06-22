@@ -58,7 +58,7 @@ impl Oas3Builder {
     }
 
     ///
-    /// ```
+    /// ```ignore
     /// let mut security_schemes: Map<String, RefOr<SecurityScheme>> = Map::default();
     /// let security_scheme = create_bearer_scheme();
     /// security_schemes.insert("bearerAuth".to_owned(), RefOr::Object(security_scheme));

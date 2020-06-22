@@ -439,6 +439,7 @@ pub enum SecuritySchemeData {
     },
     Http {
         scheme: String,
+        #[serde(rename = "bearerFormat")]
         #[serde(default, skip_serializing_if = "Option::is_none")]
         bearer_format: Option<String>,
     },
