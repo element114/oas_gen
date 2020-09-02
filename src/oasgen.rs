@@ -107,7 +107,9 @@ impl Oas3Builder {
         resp
     }
 
-    pub(crate) fn create_request_body<I: JsonSchema + Serialize>(&mut self) -> RequestBody {
+    pub(crate) fn create_request_body<I: JsonSchema + Serialize>(
+        &mut self,
+    ) -> Option<RefOr<RequestBody>> {
         let schema: schemars::schema::SchemaObject =
             self.generator.schema_generator.subschema_for::<I>().into();
         // OAS3 requires that if InstanceType::Null then ommit content entirely
@@ -117,18 +119,19 @@ impl Oas3Builder {
             } else {
                 false
             };
-        let content_type = "application/json; charset=utf-8".to_owned();
-        let media = MediaType {
-            schema: Some(schema),
-            ..MediaType::default()
-        };
-        let mut request_body = RequestBody::default();
-        if !ommit_content {
+        if ommit_content {
+            return None;
+        } else {
+            let content_type = "application/json; charset=utf-8".to_owned();
+            let media = MediaType {
+                schema: Some(schema),
+                ..MediaType::default()
+            };
+            let mut request_body = RequestBody::default();
             request_body.content.insert(content_type, media);
             request_body.required = true;
+            Some(request_body.into())
         }
-
-        request_body
     }
 
     pub(crate) fn add_error_responses<E: Serialize + JsonSchema>(
@@ -249,10 +252,6 @@ mod tests {
         let mut oasb = Oas3Builder::default();
         let resp = oasb.create_request_body::<()>();
 
-        let got = serde_json::to_value(resp).unwrap();
-        let expect = json!({
-            "content": {}
-        });
-        assert_eq!(expect, got);
+        assert_eq!(resp, None);
     }
 }

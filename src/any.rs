@@ -64,7 +64,7 @@ impl Oas3Builder {
                 operation_id: Some(operation_id),
                 description: operation_description,
                 responses: resps,
-                request_body: Some(request_body.into()),
+                request_body,
                 parameters,
                 extensions,
                 ..Operation::default()
