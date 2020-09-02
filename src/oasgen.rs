@@ -1,15 +1,14 @@
+use crate::apipath::ApiPath;
+use crate::okapi3::{
+    Components, Info, MediaType, OpenApi, OpenApiGenerator, Parameter, ParameterValue, RefOr,
+    RequestBody, Response, Responses, SecurityScheme, SecuritySchemeData,
+};
 use contracts::pre;
 use heck::CamelCase;
 use schemars::gen::{SchemaGenerator, SchemaSettings};
 use schemars::{JsonSchema, Map};
 use serde::Serialize;
 use serde_json::Value;
-
-use crate::apipath::ApiPath;
-use crate::okapi3::{
-    Components, Info, MediaType, OpenApi, OpenApiGenerator, Parameter, ParameterValue, RefOr,
-    RequestBody, Response, Responses, SecurityScheme, SecuritySchemeData,
-};
 
 #[derive(Debug, Clone)]
 pub struct Oas3Builder {
@@ -109,15 +108,26 @@ impl Oas3Builder {
     }
 
     pub(crate) fn create_request_body<I: JsonSchema + Serialize>(&mut self) -> RequestBody {
+        let schema: schemars::schema::SchemaObject =
+            self.generator.schema_generator.subschema_for::<I>().into();
+        // OAS3 requires that if InstanceType::Null then ommit content entirely
+        let ommit_content =
+            if let Some(schemars::schema::SingleOrVec::Single(some)) = &schema.instance_type {
+                schemars::schema::InstanceType::Null.eq(&*some)
+            } else {
+                false
+            };
         let content_type = "application/json; charset=utf-8".to_owned();
-        let schema = self.generator.schema_generator.subschema_for::<I>().into();
         let media = MediaType {
             schema: Some(schema),
             ..MediaType::default()
         };
         let mut request_body = RequestBody::default();
-        request_body.content.insert(content_type, media);
-        request_body.required = true;
+        if !ommit_content {
+            request_body.content.insert(content_type, media);
+            request_body.required = true;
+        }
+
         request_body
     }
 
@@ -230,6 +240,18 @@ mod tests {
         let got = serde_json::to_value(resp).unwrap();
         let expect = json!({
             "description": "Empty response is invalid in oas 3.0."
+        });
+        assert_eq!(expect, got);
+    }
+
+    #[test]
+    fn test_create_request_body_empty() {
+        let mut oasb = Oas3Builder::default();
+        let resp = oasb.create_request_body::<()>();
+
+        let got = serde_json::to_value(resp).unwrap();
+        let expect = json!({
+            "content": {}
         });
         assert_eq!(expect, got);
     }
