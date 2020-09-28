@@ -1,6 +1,6 @@
 [package]
 name = "oas_gen"
-version = "0.4.7"
+version = "0.4.8-alpha.0"
 authors = ["Andras Mocsary <nobody@reedwolf.com>"]
 repository = "https://gitlab.com/reed-wolf/oas_gen"
 documentation = "https://docs.rs/oas_gen/"
