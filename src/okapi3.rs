@@ -57,8 +57,8 @@ impl OpenApiGenerator {
             },
             components: Some(Components {
                 schemas: Map::from_iter(
-                    self.schema_generator
-                        .into_definitions()
+                    self.schema_generator.clone()
+                        .take_definitions()
                         .into_iter()
                         .map(|(k, v)| (k, v.into())),
                 ),
