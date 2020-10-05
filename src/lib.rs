@@ -11,6 +11,7 @@ mod queryparam;
 mod replace;
 mod update;
 
+pub mod jsonobject;
 mod oasgen;
 mod okapi3;
 pub mod xtests;
