@@ -6,7 +6,7 @@ pub use okapi::openapi3::{Components, OpenApi, Operation, PathItem, *};
 use std::collections::{hash_map::Entry as HashEntry, HashMap};
 
 pub type Map<K, V> = schemars::Map<K, V>;
-pub type SecurityRequirement = Map<String, Vec<String>>;
+// pub type SecurityRequirement = Map<String, Vec<String>>;
 
 #[allow(clippy::module_name_repetitions)]
 #[derive(Debug, Clone)]
