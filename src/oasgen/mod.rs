@@ -176,7 +176,7 @@ impl Oas3Builder {
                 .subschema_for::<String>()
                 .into(),
             example: Some(Value::String {
-                0: "84742".to_owned(),
+                0: "8472".to_owned(),
             }),
             examples: None,
         };

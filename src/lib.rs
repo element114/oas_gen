@@ -28,7 +28,6 @@ pub use update::*;
 
 pub use apipath::*;
 pub use oasgen::*;
-// pub use okapi3::{RefOr, SecurityScheme};
 pub use queryparam::*;
 
 #[cfg(test)]

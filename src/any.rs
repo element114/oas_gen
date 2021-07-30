@@ -58,7 +58,9 @@ impl Oas3Builder {
         self.add_path_params(web_path.clone(), &mut parameters);
 
         let mut extensions: Map<String, Value> = Map::default();
-        extensions.insert("x-tests".to_owned(), serde_json::to_value(tests).unwrap());
+        if !tests.is_empty() {
+            extensions.insert("x-tests".to_owned(), serde_json::to_value(tests).unwrap());
+        }
 
         self.generator.add_operation(OperationInfo {
             path: web_path.to_string(),
