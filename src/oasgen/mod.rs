@@ -22,6 +22,11 @@ impl Default for Oas3Builder {
         Oas3Builder::new()
     }
 }
+impl From<OpenApiGenerator> for Oas3Builder {
+    fn from(generator: OpenApiGenerator) -> Self {
+        Oas3Builder { generator }
+    }
+}
 impl Oas3Builder {
     #[must_use]
     pub fn new() -> Self {
