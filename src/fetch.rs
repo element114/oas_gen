@@ -3,8 +3,8 @@ use serde::Serialize;
 use serde_json::Value;
 
 use crate::apipath::ApiPath;
+use crate::generator::{Map, Operation, OperationInfo, Parameter, RefOr, Responses};
 use crate::oasgen::Oas3Builder;
-use crate::okapi3::{Map, Operation, OperationInfo, Parameter, RefOr, Responses};
 use crate::xtests::Test;
 
 impl Oas3Builder {
@@ -14,7 +14,7 @@ impl Oas3Builder {
         document_name: String,
         operation_description: Option<String>,
     ) {
-        self.fetch_with_tests::<O, E>(web_path, document_name, operation_description, &[])
+        self.fetch_with_tests::<O, E>(web_path, document_name, operation_description, &[]);
     }
 
     /// This variant accepts a test spec
@@ -34,6 +34,10 @@ impl Oas3Builder {
     /// assert_eq!(r#"{"description":"Fetch a document by key.","params":{"key":"8472"},"response":{"status":[200]}}"#, serde_json::to_string(&test_ok).unwrap());
     /// let tests = vec![test_ok];
     /// ```
+    ///
+    /// # Panics
+    ///
+    /// Will panic if json serialization of `tests` fail
     pub fn fetch_with_tests<O: JsonSchema + Serialize, E: JsonSchema + Serialize>(
         &mut self,
         web_path: &ApiPath,
@@ -70,6 +74,6 @@ impl Oas3Builder {
                 extensions,
                 ..Operation::default()
             },
-        })
+        });
     }
 }

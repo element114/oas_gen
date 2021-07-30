@@ -19,6 +19,7 @@ http = ">=0.2"
 heck = "0.3"
 serde_skip = "0.1"
 contracts = "0.6"
+okapi = "0.6.0-alpha-1"
 
 [dev-dependencies]
 openapiv3 = "0.5"

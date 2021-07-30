@@ -1,6 +1,6 @@
 use contracts::requires;
 
-use crate::okapi3::Parameter;
+use crate::generator::Parameter;
 use crate::queryparam::QueryParamBuilder;
 
 #[derive(Debug, Clone, Default)]

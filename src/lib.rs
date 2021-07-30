@@ -1,5 +1,6 @@
 #![forbid(unsafe_code)]
 #![warn(clippy::pedantic)]
+#![allow(non_fmt_panic)]
 
 mod any;
 mod apipath;
@@ -13,7 +14,8 @@ mod update;
 
 pub mod jsonobject;
 mod oasgen;
-mod okapi3;
+// mod okapi3;
+mod generator;
 pub mod xtests;
 
 pub use any::*;
@@ -26,7 +28,7 @@ pub use update::*;
 
 pub use apipath::*;
 pub use oasgen::*;
-pub use okapi3::{RefOr, SecurityScheme};
+// pub use okapi3::{RefOr, SecurityScheme};
 pub use queryparam::*;
 
 #[cfg(test)]

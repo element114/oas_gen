@@ -1,5 +1,5 @@
 use crate::apipath::ApiPath;
-use crate::okapi3::{
+use crate::generator::{
     Components, Info, MediaType, OpenApi, OpenApiGenerator, Parameter, ParameterValue, RefOr,
     RequestBody, Response, Responses, SecurityScheme, SecuritySchemeData,
 };
@@ -52,7 +52,37 @@ impl Oas3Builder {
             },
             description: None,
             extensions: Map::default(),
-            schema_type: None,
+            schema_type: "http".to_owned(),
+        }
+    }
+
+    /// Create a http basic Auth security scheme
+    #[must_use]
+    pub fn create_basic_scheme() -> SecurityScheme {
+        SecurityScheme {
+            // schema_type: "http".to_owned(),
+            data: SecuritySchemeData::Http {
+                scheme: "basic".to_owned(),
+                bearer_format: None,
+            },
+            description: None,
+            extensions: Map::default(),
+            schema_type: "http".to_owned(),
+        }
+    }
+
+    /// Create apikey Auth security scheme
+    #[must_use]
+    pub fn create_apikey_scheme(apikey_header: String) -> SecurityScheme {
+        SecurityScheme {
+            // schema_type: "http".to_owned(),
+            data: SecuritySchemeData::ApiKey {
+                location: "header".to_owned(),
+                name: apikey_header,
+            },
+            description: None,
+            extensions: Map::default(),
+            schema_type: "apiKey".to_owned(),
         }
     }
 
@@ -99,8 +129,10 @@ impl Oas3Builder {
             schema: Some(schema),
             ..MediaType::default()
         };
-        let mut resp = Response::default();
-        resp.description = description;
+        let mut resp = Response {
+            description,
+            ..Response::default()
+        };
         if !ommit_content {
             resp.content.insert(content_type, media);
         }
@@ -120,7 +152,7 @@ impl Oas3Builder {
                 false
             };
         if ommit_content {
-            return None;
+            None
         } else {
             let content_type = "application/json; charset=utf-8".to_owned();
             let media = MediaType {
@@ -175,12 +207,11 @@ impl Oas3Builder {
             style: None,
             explode: None,
             allow_reserved: false,
-            schema: Box::new(
-                self.generator
-                    .schema_generator
-                    .subschema_for::<String>()
-                    .into(),
-            ),
+            schema: self
+                .generator
+                .schema_generator
+                .subschema_for::<String>()
+                .into(),
             example: Some(Value::String {
                 0: "84742".to_owned(),
             }),

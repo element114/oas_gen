@@ -3,7 +3,7 @@ use schemars::JsonSchema;
 use serde::Serialize;
 use serde_json::Value;
 
-use crate::okapi3::{Example, Map, Parameter, ParameterStyle, ParameterValue};
+use crate::generator::{Example, Map, Parameter, ParameterStyle, ParameterValue};
 
 #[derive(Debug, Clone)]
 pub struct QueryParamBuilder {
@@ -14,17 +14,13 @@ impl QueryParamBuilder {
     #[must_use]
     pub fn new<T: JsonSchema + Serialize>(name: String, example: Option<T>) -> Self {
         let mut schema_generator = SchemaGenerator::new(SchemaSettings::openapi3());
-        let example = if let Some(ex) = example {
-            Some(serde_json::to_value(&ex).unwrap_or_default())
-        } else {
-            None
-        };
+        let example = example.map(|ex| serde_json::to_value(&ex).unwrap_or_default());
         let param_name = name;
         let param_schema = ParameterValue::Schema {
             style: None,
             explode: None,
             allow_reserved: false,
-            schema: Box::new(schema_generator.subschema_for::<T>().into()),
+            schema: schema_generator.subschema_for::<T>().into(),
             example,
             examples: None,
         };

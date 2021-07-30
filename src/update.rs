@@ -3,8 +3,8 @@ use serde::Serialize;
 use serde_json::Value;
 
 use crate::apipath::ApiPath;
+use crate::generator::{Map, Operation, OperationInfo, Parameter, RefOr, Responses};
 use crate::oasgen::Oas3Builder;
-use crate::okapi3::{Map, Operation, OperationInfo, Parameter, RefOr, Responses};
 use crate::xtests::Test;
 
 impl Oas3Builder {
@@ -18,9 +18,12 @@ impl Oas3Builder {
         document_name: String,
         operation_description: Option<String>,
     ) {
-        self.update_with_tests::<I, O, E>(web_path, document_name, operation_description, &[])
+        self.update_with_tests::<I, O, E>(web_path, document_name, operation_description, &[]);
     }
 
+    /// # Panics
+    ///
+    /// Will panic if json serialization of `tests` fail
     pub fn update_with_tests<
         I: JsonSchema + Serialize,
         O: JsonSchema + Serialize,
@@ -63,6 +66,6 @@ impl Oas3Builder {
                 extensions,
                 ..Operation::default()
             },
-        })
+        });
     }
 }
