@@ -1,4 +1,4 @@
-use contracts::pre;
+use contracts::requires;
 
 use crate::okapi3::Parameter;
 use crate::queryparam::QueryParamBuilder;
@@ -16,9 +16,9 @@ impl std::fmt::Display for ApiId {
     }
 }
 impl ApiId {
-    #[pre(!document.contains('/'))]
-    #[pre(key.starts_with('{'))]
-    #[pre(key.ends_with('}'))]
+    #[requires(!document.contains('/'))]
+    #[requires(key.starts_with('{'))]
+    #[requires(key.ends_with('}'))]
     pub fn new(document: &str, key: &str) -> Self {
         ApiId {
             document: document.to_owned(),
@@ -54,12 +54,12 @@ impl std::fmt::Display for ApiPath {
 impl ApiPath {
     /// </api/testdoc> is represented as @prefix:`api` and @token:`testdoc`.
     /// </api/user/8/testdoc> is represented as @prefix:`api` @ids: `[('user','{user_key}')]` and @token:`testdoc`.
-    #[pre(!prefix.clone().unwrap_or_default().starts_with('/'))]
-    #[pre(!prefix.clone().unwrap_or_default().contains('{'))]
-    #[pre(!prefix.clone().unwrap_or_default().contains('}'))]
-    #[pre(!token.clone().unwrap_or_default().starts_with('/'))]
-    #[pre(!token.clone().unwrap_or_default().contains('{'))]
-    #[pre(!token.clone().unwrap_or_default().contains('}'))]
+    #[requires(!prefix.clone().unwrap_or_default().starts_with('/'))]
+    #[requires(!prefix.clone().unwrap_or_default().contains('{'))]
+    #[requires(!prefix.clone().unwrap_or_default().contains('}'))]
+    #[requires(!token.clone().unwrap_or_default().starts_with('/'))]
+    #[requires(!token.clone().unwrap_or_default().contains('{'))]
+    #[requires(!token.clone().unwrap_or_default().contains('}'))]
     pub fn new(prefix: Option<String>, ids: Vec<ApiId>, token: Option<String>) -> Self {
         ApiPath {
             prefix,
@@ -70,12 +70,12 @@ impl ApiPath {
     }
 
     /// Adds query parameters to the url, otherwise same as new.
-    #[pre(!prefix.clone().unwrap_or_default().starts_with('/'))]
-    #[pre(!prefix.clone().unwrap_or_default().contains('{'))]
-    #[pre(!prefix.clone().unwrap_or_default().contains('}'))]
-    #[pre(!token.clone().unwrap_or_default().starts_with('/'))]
-    #[pre(!token.clone().unwrap_or_default().contains('{'))]
-    #[pre(!token.clone().unwrap_or_default().contains('}'))]
+    #[requires(!prefix.clone().unwrap_or_default().starts_with('/'))]
+    #[requires(!prefix.clone().unwrap_or_default().contains('{'))]
+    #[requires(!prefix.clone().unwrap_or_default().contains('}'))]
+    #[requires(!token.clone().unwrap_or_default().starts_with('/'))]
+    #[requires(!token.clone().unwrap_or_default().contains('{'))]
+    #[requires(!token.clone().unwrap_or_default().contains('}'))]
     pub fn with_queries(
         prefix: Option<String>,
         ids: Vec<ApiId>,

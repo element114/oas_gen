@@ -3,7 +3,7 @@ use crate::okapi3::{
     Components, Info, MediaType, OpenApi, OpenApiGenerator, Parameter, ParameterValue, RefOr,
     RequestBody, Response, Responses, SecurityScheme, SecuritySchemeData,
 };
-use contracts::pre;
+use contracts::requires;
 use heck::CamelCase;
 use schemars::gen::{SchemaGenerator, SchemaSettings};
 use schemars::{JsonSchema, Map};
@@ -158,9 +158,9 @@ impl Oas3Builder {
         responses.responses.insert(status, resp.into());
     }
 
-    #[pre(param_name.starts_with('{'))]
-    #[pre(param_name.ends_with('}'))]
-    #[pre(param_name.len() >2)]
+    #[requires(param_name.starts_with('{'))]
+    #[requires(param_name.ends_with('}'))]
+    #[requires(param_name.len() >2)]
     pub(crate) fn add_path_param(
         &mut self,
         param_name: String,
